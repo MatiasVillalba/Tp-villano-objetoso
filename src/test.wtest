@@ -1,0 +1,38 @@
+import main.*
+
+describe "Test mi villano objetoso" {
+	
+	var gru = new Villano()
+	var pepe = new Minion("pepe","amarillo",2,[])
+
+fixture {
+	
+	gru.agregarMinion(pepe)
+	
+}
+
+test "Se crea un minion amarillo con 5 bananas y un rayo congelante con 10 de potencia" {
+	
+	gru.nuevoMinion("roby")
+	assert.that(gru.ejercito().last().nombre() == "roby")
+
+}
+
+test "se le otorga un arma a un minion" {
+	
+	pepe.agregarArma(new Arma("rayo poderoso",20))
+	assert.that(pepe.armas().head().nombreArma() == "rayo poderoso")
+	
+}
+
+test "Se alimenta a un minion" {
+	
+	gru.alimentarA(pepe,2)
+	assert.equals(pepe.bananas() == 4)
+}
+
+test "Se verifica si un minion es peligroso" {
+	assert.that(pepe.esPeligroso().negate())
+}
+
+}
