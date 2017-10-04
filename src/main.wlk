@@ -175,7 +175,7 @@ class Ciudad {
 	}
 	
 	method temperatura(unaTemperatura) {
-		temperatura = unaTemperatura
+		temperatura = self.temperatura() + unaTemperatura
 	}
 	
 	method temperatura() {

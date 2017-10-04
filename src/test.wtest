@@ -40,7 +40,7 @@ test "Se verifica si un minion es peligroso" {
 test "Gru planifica hacer un congelamiento" {
 	pepe.agregarArma(new Arma("rayo congelante",20))
 	gru.planificarMaldad(congelar)
-	
-	assert.equals(pepe.bananas(),510)
+	assert.equals(-10,buenosAires.temperatura())
+	assert.equals(510,pepe.bananas())
 }
 }
