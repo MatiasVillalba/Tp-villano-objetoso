@@ -1,13 +1,15 @@
 import main.*
 
 describe "Test mi villano objetoso" {
-	
+	var buenosAires = new Ciudad(20)
 	var gru = new Villano()
-	var pepe = new Minion("pepe","amarillo",2,[])
+	var pepe = new Minion("pepe","amarillo",500,[])
+	var congelar = new Congelar(500)
 
 fixture {
 	
 	gru.agregarMinion(pepe)
+	gru.ciudad(buenosAires)
 	
 }
 
@@ -20,8 +22,8 @@ test "Se crea un minion amarillo con 5 bananas y un rayo congelante con 10 de po
 
 test "se le otorga un arma a un minion" {
 	
-	pepe.agregarArma(new Arma("rayo poderoso",20))
-	assert.that(pepe.armas().head().nombreArma() == "rayo poderoso")
+	pepe.agregarArma(new Arma("rayo congelante",20))
+	assert.that(pepe.armas().head().nombreArma() == "rayo congelante")
 	
 }
 
@@ -35,4 +37,10 @@ test "Se verifica si un minion es peligroso" {
 	assert.that(pepe.esPeligroso().negate())
 }
 
+test "Gru planifica hacer un congelamiento" {
+	pepe.agregarArma(new Arma("rayo congelante",20))
+	gru.planificarMaldad(congelar)
+	
+	assert.equals(pepe.bananas(),510)
+}
 }

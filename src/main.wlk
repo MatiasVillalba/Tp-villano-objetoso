@@ -1,5 +1,14 @@
 class Villano {
 	var ejercito = []
+	var ciudad
+		
+	method ciudad() {
+		return ciudad
+	}
+	
+	method ciudad(unaCiudad) {
+		ciudad = unaCiudad
+	}
 	
 	method nuevoMinion(unNombre) {
 		return ejercito.add(new Minion(unNombre,"amarillo",5,new Arma("rayo congelante",10)))
@@ -20,6 +29,11 @@ class Villano {
 	
 	method alimentarA(unMinion,unaCantidadDeBananas) {
 		unMinion.alimentarse(unaCantidadDeBananas)
+	}
+	
+	method planificarMaldad(unaMaldad) {
+		unaMaldad.aplicarCambios(self.ejercito().filter({e => e.tieneRayoCongelante() && (e.nivelConcentracion() > unaMaldad.concentracionRequerida())}),self.ciudad())
+		
 	}
 	
 }
@@ -98,6 +112,10 @@ class Minion {
 		}
 		
 	}
+	
+	method tieneRayoCongelante() {
+		return self.armas().map({a => a.nombreArma()}).contains("rayo congelante")
+	}
 
 
 }
@@ -118,5 +136,49 @@ class Arma {
 	
 	method nombreArma() {
 		return nombre
+	}
+}
+
+class Congelar {
+	var concentracion
+	
+	constructor(unaConcentracion) {
+		concentracion = unaConcentracion
+	}
+	
+	method concentracionRequerida(unaConcentracion) {
+		concentracion = unaConcentracion
+	}
+	
+	method concentracionRequerida() {
+		return concentracion
+	}
+	
+	method aplicarCambios(minionsAceptados,unaCiudad) {
+		if(minionsAceptados.isEmpty()) {
+			error.throwWithMessage("No hay minions que pueden hacer la maldad")
+		}
+		unaCiudad.temperatura(-30)
+		minionsAceptados.forEach({m => m.alimentarse(10)})
+	}
+}
+
+class Robar {
+	
+}
+
+class Ciudad {
+	var temperatura
+	
+	constructor(unaTemperatura) {
+		temperatura = unaTemperatura
+	}
+	
+	method temperatura(unaTemperatura) {
+		temperatura = unaTemperatura
+	}
+	
+	method temperatura() {
+		return temperatura
 	}
 }
