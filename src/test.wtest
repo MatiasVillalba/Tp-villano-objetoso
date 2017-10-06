@@ -1,15 +1,20 @@
 import main.*
 
 describe "Test mi villano objetoso" {
-	var buenosAires = new Ciudad(20)
+	var buenosAires = new Ciudad(20,[])
 	var gru = new Villano()
 	var pepe = new MinionAmarillo("pepe",500,[])
+	var gordito = new MinionAmarillo("gordito",900, [new Arma("rayo congelante",90)])
+	var redondito = new MinionAmarillo("redondito",540, [new Arma("rayo congelante",35)])
 	var congelar = new Congelar(500)
+	var roboDePiramide = new Piramide(90)
+	
 
 fixture {
 	
 	gru.agregarMinion(pepe)
 	gru.ciudad(buenosAires)
+	pepe.minionActual(pepe)
 	
 }
 
@@ -39,14 +44,28 @@ test "Se verifica si un minion es peligroso" {
 
 test "Pepe que es un minion amarillo toma la pocion" {
 	pepe.absorberSueroMutante()
-	assert.that(pepe.color() == "violeta")
+	assert.that(pepe.minionActual().color() == "violeta")
+	assert.equals(499,pepe.minionActual().bananas())
 }
 
 test "Gru planifica hacer un congelamiento" {
 	pepe.agregarArma(new Arma("rayo congelante",20))
-	gru.planificarMaldadCongelar(congelar)
+	gru.planificarMaldad(congelar)
 	assert.equals(-10,buenosAires.temperatura())
 	assert.equals(510,pepe.bananas())
+}
+
+test "  la maldad congelar tiene un ejercito de 2 minions"{
+	
+	assert.equals(2,congelar.minionsSeleccionados([gordito,redondito,pepe]).size())
+}
+
+test "Gru planifica robar una piramide"{
+	pepe.agregarArma(new Arma("rayo congelante",20))
+	buenosAires.agregarObjeto("Piramide")
+	gru.planificarMaldad(roboDePiramide)
+	assert.equals([],buenosAires.objetosQuePosee())
+	assert.equals(910,gordito.bananas())
 }
 
 
