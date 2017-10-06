@@ -13,7 +13,7 @@ class Villano {
 	}
 	
 	method nuevoMinion(unNombre) {
-		return ejercito.add(new MinionAmarillo(unNombre,5,new Arma("rayo congelante",10)))
+		return ejercito.add(new Minion(unNombre,amarillo,5,new Arma("rayo congelante",10)))
 		
 	}
 	
@@ -32,16 +32,7 @@ class Villano {
 	method alimentarA(unMinion,unaCantidadDeBananas) {
 		unMinion.bananas(unaCantidadDeBananas)
 	}
-	
-	/*method planificarMaldadCongelar(unaMaldad) {
-		unaMaldad.aplicarCambios(self.ejercito().filter({e => e.tieneRayoCongelante() && (e.nivelConcentracion() > unaMaldad.concentracionRequerida())}),self.ciudad())
-		
-	}*/
-	
-	/*method planificarMaldadRobar(unaMaldad,unObjeto) {
-		unaMaldad.aplicarCambios(self.ejercito().filter({e => e.esPeligroso()}))
-	}*/
-	
+
 	method planificarMaldad(unaMaldad) {
 		unaMaldad.aplicarCambios(self.ejercito(),self.ciudad())
 		
@@ -54,7 +45,6 @@ class Minion {
 	var nombre
 	var armas = []
 	var cantBananas
-	var tipoMinion
 	
 	constructor(unNombre,unColor,bananas,unasArmas) {
 		nombre = unNombre
@@ -87,26 +77,16 @@ class Minion {
 		color = unColor
 	}
 	
-	method minionActual(unMinion) {
-		tipoMinion = unMinion
-	}
-	
-	method minionActual() {
-		 return tipoMinion
-	}
-	
 	method color() {
 		return color
 	}
 	
-}
-
-class MinionAmarillo inherits Minion {
-	
-	constructor(unNombre,bananas,unasArmas) = super(unNombre,"amarillo",bananas,unasArmas)
+	method absorberSueroMutante() {
+		self.color().aplicarCambio(self)
+	}
 	
 	method esPeligroso() {
-		return armas.size() > 2
+		return self.color().esPeligrosoMinion(self)
 	}
 	
 	method potenciaArmaMasPotente() {
@@ -114,32 +94,66 @@ class MinionAmarillo inherits Minion {
 	}
 	
 	method nivelConcentracion() {
-		return self.potenciaArmaMasPotente() + self.bananas()
+		return self.color().nivelConcentracionPorColor(self)
 	}
 	
-	method absorberSueroMutante() {
-		self.armas().clear()
-		self.minionActual(new MinionVioleta(self.nombre(),(self.bananas() - 1),self.armas()))
-	}	
-	
-	method tieneRayoCongelante() {
-		return self.armas().map({a => a.nombreArma()}).contains("rayo congelante")
+	method tieneEstaArma(nombreDeArma){
+		return self.armas().map({a=>a.nombreArma()}).contains(nombreDeArma)
 	}
+	
+	method esBienAlimentado(){
+		return self.bananas() > 99
+	}
+	
+	
 }
 
-class MinionVioleta inherits Minion {
+object amarillo {
+	var nombreColor = "amarillo"
 	
-	constructor(unNombre,bananas,unasArmas) = super(unNombre,"violeta",bananas,unasArmas)
+	method esPeligrosoMinion(unMinion) {
+		return unMinion.armas().size() > 2
+	}
 	
-	method esPeligroso() {
+	method nombreColor() {
+		return nombreColor
+	}
+	
+	method aplicarCambio(unMinion) {
+		unMinion.color(violeta)
+		unMinion.armas().clear()
+		unMinion.bananas(-1)
+	}
+	
+	method nivelConcentracionPorColor(unMinion) {
+		return unMinion.potenciaArmaMasPotente() + unMinion.bananas()
+	}	
+
+}
+
+object violeta {
+	var nombreColor = "violeta"
+	
+	method esPeligrosoMinion(unMinion) {
 		return true
 	}
 	
-	method absorberSueroMutante() {
-		self.minionActual(new MinionAmarillo(self.nombre(),(self.bananas() - 1),self.armas()))
+	method nombreColor() {
+		return nombreColor
+	}
+	
+	method aplicarCambio(unMinion) {
+		unMinion.color(amarillo)
+		unMinion.bananas(-1)
+		
+	}
+	
+	method nivelConcentracionPorColor(unMinion) {
+		return unMinion.bananas()
 	}
 
 }
+
 
 
 class Arma {
@@ -172,19 +186,19 @@ class Congelar {
 	}
 	
 	method minionsSeleccionados(minions){
-		return minions.filter({e => e.tieneRayoCongelante() && (e.nivelConcentracion() > self.concentracionRequerida())})
+		return minions.filter({m => m.tieneEstaArma("rayo congelante") && (m.nivelConcentracion() > self.concentracionRequerida())})
 	}
 	
 	method concentracionRequerida() {
 		return concentracion
 	}
 	
-	method aplicarCambios(minionsAceptados,unaCiudad) {
-		if(minionsAceptados.isEmpty()) {
+	method aplicarCambios(ejercitoVillano,unaCiudad) {
+		if(self.minionsSeleccionados(ejercitoVillano).isEmpty()) {
 			error.throwWithMessage("No hay minions que pueden hacer la maldad")
 		}
 		unaCiudad.temperatura(-30)
-		minionsAceptados.forEach({m => m.bananas(10)})
+		self.minionsSeleccionados(ejercitoVillano).forEach({m => m.bananas(10)})
 	}
 }
 
@@ -224,7 +238,7 @@ class Piramide inherits Robar{
 		if(self.minionsSeleccionados(minions).isEmpty()) {
 			error.throwWithMessage("No hay minions que pueden hacer la maldad")
 		}
-		self.minionsSeleccionados(minions).forEach({m => m.alimentarse(10)})
+		self.minionsSeleccionados(minions).forEach({m => m.bananas(10)})
 		unaCiudad.eliminarObjeto("Piramide")
 	}
 	
