@@ -19,7 +19,7 @@ fixture {
 
 method gorditoArmado(){
 	gordito.agregarArma(new Arma("rayo Congelante",40))
-	gordito.agregarArma(new Arma("rayo Lacer",20))
+	gordito.agregarArma(new Arma("rayo Laser",20))
 }
 
 method buenosAiresConObjetos(){
@@ -98,11 +98,63 @@ test "Gru roba la Luna "{
 	self.buenosAiresConObjetos()
 	self.gorditoArmado()
 	gru.agregarMinion(gordito)
-	gru.planificarMaldad(luna)
 	
-	assert.throwsExceptionWithMessage("No hay minions que pueden hacer la maldad", {luna.aplicarCambios(gru.ejercito(),buenosAires)})
+	assert.throwsExceptionWithMessage("No hay minions que pueden hacer la maldad", {gru.planificarMaldad(luna)})
 
 }
+
+test "El minion mas util de gru es Pepe" {
+	pepe.agregarMaldad(congelar)
+	pepe.agregarMaldad(roboDePiramide)
+	gru.agregarMinion(redondito)
+	redondito.agregarMaldad(congelar)
+	
+	assert.equals(pepe,gru.minionMasUtil())
+	
+}
+
+test "El minion mas inutil de gru es gordito" {
+	pepe.agregarMaldad(congelar)
+	pepe.agregarMaldad(roboDePiramide)
+	gru.agregarMinion(redondito)
+	redondito.agregarMaldad(congelar)
+	gru.agregarMinion(gordito)
+	
+	assert.equals([gordito],gru.minionsMasInutiles())
+}
+
+
+/*Punto 4 */
+/*a)Se crearia un nuevo objeto verde y dentro de este objeto tendria los mismos metodos que el objeto amarillo
+ * y el objeto violeta pero con un comportamiento distinto en los metodos aplicarCambios, nivelDeConcentracionPorColor
+ * y el metodo esPeligrosoMinion esto aprovecha el polimorfismo ya que no importa el color en que se transforme minion
+ * ya que con el polimorfismo todos los colores entienden el mismo mensaje pero aplican diferentes comportamientos
+ * dependiendo del color 
+ * 
+ * Ejemplo del nuevo comportamiento del color verde
+ * 
+ * Un minion de color verde nunca es peligroso 
+ * 
+ * method esPeligrosoMinion() {
+ * 		return false
+ * }
+ * 
+ * Un minion violeta al tomar el suero se transforma en verde y pierde 3 bananas
+ * 
+ * method aplicarCambio(unMinion) {
+ * 		unMinion.color(verde)
+ * 		unMinion.bananas(-3)
+ * }
+ * 
+ * Un minion de color verde tiene un nivel de concentracion igual a la cantidad de bananas que
+ * posee mas 2
+ * 
+ * method nivelDeConcentracionPorColor(unMinion) {
+ * 		return unMinion.bananas() + 2
+ * }
+ * 
+ */
+/*b)En ese caso el metodo aplicarCambios del objeto violeta no hace nada */
 
 
 }

@@ -38,6 +38,14 @@ class Villano {
 		
 	}
 	
+	method minionMasUtil() {
+		return self.ejercito().max({minion => minion.maldades().size()})
+	}
+	
+	method minionsMasInutiles() {
+		return self.ejercito().filter({minion => minion.maldades().isEmpty()})
+	}
+	
 }
 
 class Minion {
@@ -45,6 +53,7 @@ class Minion {
 	var nombre
 	var armas = []
 	var cantBananas
+	var maldades = []
 	
 	constructor(unNombre,unColor,bananas,unasArmas) {
 		nombre = unNombre
@@ -63,6 +72,14 @@ class Minion {
 	
 	method bananas(unaCantidadDeBananas) {
 		cantBananas = self.bananas() + unaCantidadDeBananas
+	}
+	
+	method maldades() {
+		return maldades
+	}
+	
+	method agregarMaldad(unaMaldad) {
+		maldades.add(unaMaldad)
 	}
 	
 	method agregarArma(unArma) {
@@ -199,6 +216,7 @@ class Congelar {
 		}
 		unaCiudad.temperatura(-30)
 		self.minionsSeleccionados(ejercitoVillano).forEach({m => m.bananas(10)})
+		self.minionsSeleccionados(ejercitoVillano).forEach({m => m.agregarMaldad(self)})
 	}
 }
 
@@ -239,6 +257,7 @@ class Piramide inherits Robar{
 			error.throwWithMessage("No hay minions que pueden hacer la maldad")
 		}
 		self.minionsSeleccionados(minions).forEach({m => m.bananas(10)})
+		self.minionsSeleccionados(minions).forEach({m => m.agregarMaldad(self)})
 		unaCiudad.eliminarObjeto("Piramide")
 	}
 	
@@ -256,6 +275,7 @@ object sueroMutante inherits Robar{
 		}
 		unaCiudad.eliminarObjeto("Suero")
 		self.minionsSeleccionados(minions).forEach({m => m.absorberSueroMutante()})
+		self.minionsSeleccionados(minions).forEach({m => m.agregarMaldad(self)})
 		
 	}
 	
@@ -273,7 +293,7 @@ object luna inherits Robar {
 		}
 		unaCiudad.eliminarObjeto("Luna")
 		self.minionsSeleccionados(minions).forEach({m => m.agregarArma(new Arma("rayo congelante",10))})
-		
+		self.minionsSeleccionados(minions).forEach({m => m.agregarMaldad(self)})
 	}
 	
 }
