@@ -30,11 +30,11 @@ class Villano {
 	}
 	
 	method alimentarA(unMinion,unaCantidadDeBananas) {
-		unMinion.bananas(unaCantidadDeBananas)
+		unMinion.sumarBananas(unaCantidadDeBananas)
 	}
 
 	method planificarMaldad(unaMaldad) {
-		unaMaldad.aplicarCambios(self.ejercito(),self.ciudad())
+		unaMaldad.modificarCiudad(self.minionsQuePuedenHacerMaldad(unaMaldad),self.ciudad())
 		
 	}
 	
@@ -46,6 +46,10 @@ class Villano {
 		return self.ejercito().filter({minion => minion.maldades().isEmpty()})
 	}
 	
+	method minionsQuePuedenHacerMaldad(unaMaldad) {
+		return self.ejercito().filter({m => unaMaldad.cumpleRequisito(m)})
+	}
+	
 }
 
 class Minion {
@@ -55,9 +59,9 @@ class Minion {
 	var cantBananas
 	var maldades = []
 	
-	constructor(unNombre,unColor,bananas,unasArmas) {
+	constructor(unNombre,unColor,bananas,unaArma) {
 		nombre = unNombre
-		armas = unasArmas
+		armas.add(unaArma)
 		cantBananas = bananas
 		color = unColor
 	}
@@ -70,7 +74,11 @@ class Minion {
 		return cantBananas
 	}
 	
-	method bananas(unaCantidadDeBananas) {
+	method restarBananas(unaCantidadDeBananas) {
+		cantBananas = self.bananas() - unaCantidadDeBananas
+	}
+	
+	method sumarBananas(unaCantidadDeBananas) {
 		cantBananas = self.bananas() + unaCantidadDeBananas
 	}
 	
@@ -99,7 +107,7 @@ class Minion {
 	}
 	
 	method absorberSueroMutante() {
-		self.color().aplicarCambio(self)
+		self.color().transformarMinion(self)
 	}
 	
 	method esPeligroso() {
@@ -107,7 +115,7 @@ class Minion {
 	}
 	
 	method potenciaArmaMasPotente() {
-		return self.armas().map({a => a.potencia()}).max()
+		return self.armas().max({a => a.potencia()})
 	}
 	
 	method nivelConcentracion() {
@@ -126,42 +134,32 @@ class Minion {
 }
 
 object amarillo {
-	var nombreColor = "amarillo"
 	
 	method esPeligrosoMinion(unMinion) {
 		return unMinion.armas().size() > 2
 	}
-	
-	method nombreColor() {
-		return nombreColor
-	}
-	
-	method aplicarCambio(unMinion) {
+
+	method transformarMinion(unMinion) {
 		unMinion.color(violeta)
 		unMinion.armas().clear()
-		unMinion.bananas(-1)
+		unMinion.restarBananas(1)
 	}
 	
 	method nivelConcentracionPorColor(unMinion) {
-		return unMinion.potenciaArmaMasPotente() + unMinion.bananas()
+		return unMinion.potenciaArmaMasPotente().potencia() + unMinion.bananas()
 	}	
 
 }
 
 object violeta {
-	var nombreColor = "violeta"
 	
 	method esPeligrosoMinion(unMinion) {
 		return true
 	}
 	
-	method nombreColor() {
-		return nombreColor
-	}
-	
-	method aplicarCambio(unMinion) {
+	method transformarMinion(unMinion) {
 		unMinion.color(amarillo)
-		unMinion.bananas(-1)
+		unMinion.restarBananas(1)
 		
 	}
 	
@@ -202,38 +200,25 @@ class Congelar {
 		concentracion = unaConcentracion
 	}
 	
-	method minionsSeleccionados(minions){
-		return minions.filter({m => m.tieneEstaArma("rayo congelante") && (m.nivelConcentracion() > self.concentracionRequerida())})
+	method cumpleRequisito(unMinion) {
+		return unMinion.tieneEstaArma("rayo congelante") && (unMinion.nivelConcentracion() > self.concentracionRequerida())
 	}
 	
 	method concentracionRequerida() {
 		return concentracion
 	}
 	
-	method aplicarCambios(ejercitoVillano,unaCiudad) {
-		if(self.minionsSeleccionados(ejercitoVillano).isEmpty()) {
+	method modificarCiudad(minions,unaCiudad) {
+		if(minions.isEmpty()) {
 			error.throwWithMessage("No hay minions que pueden hacer la maldad")
 		}
 		unaCiudad.temperatura(-30)
-		self.minionsSeleccionados(ejercitoVillano).forEach({m => m.bananas(10)})
-		self.minionsSeleccionados(ejercitoVillano).forEach({m => m.agregarMaldad(self)})
+		minions.forEach({m => m.sumarBananas(10)})
+		minions.forEach({m => m.agregarMaldad(self)})
 	}
 }
 
-class Robar {
-	
-	var minionsPeligrosos=[]
-	
-	method minionsPeligrosos() = minionsPeligrosos
-	
-	method minionPeligrosos(minions){
-		return minions.filter({m=>m.esPeligroso()})
-		
-	}	
-	
-}
-
-class Piramide inherits Robar{
+class Piramide {
 	var altura
 	
 	constructor(unaAltura) {
@@ -248,52 +233,57 @@ class Piramide inherits Robar{
 		return self.altura() / 2
 	}
 	
-	method minionsSeleccionados(minions){
-		return self.minionPeligrosos(minions).filter({m=>m.nivelConcentracion() > self.concentracionRequerida()})	
+	method cumpleRequisito(unMinion) {
+		return unMinion.nivelConcentracion() > self.concentracionRequerida() && unMinion.esPeligroso()
 	}
-	
-	method aplicarCambios(minions,unaCiudad) {
-		if(self.minionsSeleccionados(minions).isEmpty()) {
+
+	method modificarCiudad(minions,unaCiudad) {
+		if(unaCiudad.poseeEsteObjetoLaCiudad(self).negate()){
+			throw new SinElementosException("No se puede realizar este robo")
+		}
+		if(minions.isEmpty()) {
 			error.throwWithMessage("No hay minions que pueden hacer la maldad")
 		}
-		self.minionsSeleccionados(minions).forEach({m => m.bananas(10)})
-		self.minionsSeleccionados(minions).forEach({m => m.agregarMaldad(self)})
-		unaCiudad.eliminarObjeto("Piramide")
+		minions.forEach({m => m.sumarBananas(10)})
+		minions.forEach({m => m.agregarMaldad(self)})
+		unaCiudad.eliminarObjeto(self)
 	}
 	
 }
 
-object sueroMutante inherits Robar{
-	
-	method minionsSeleccionados(minions){
-		return self.minionPeligrosos(minions).filter({m=>m.esBienAlimentado() && (m.nivelConcentracion() > 23)})	
+object sueroMutante {
+
+	method cumpleRequisito(unMinion) {
+		return unMinion.esPeligroso() && unMinion.esBienAlimentado() && unMinion.nivelConcentracion() > 23
 	}	
 	
-	method aplicarCambios(minions,unaCiudad){
-		if(self.minionsSeleccionados(minions).isEmpty()) {
+	method modificarCiudad(minions,unaCiudad) {
+		if(unaCiudad.poseeEsteObjetoLaCiudad(self).negate()){
+			throw new SinElementosException("No se puede realizar este robo")
+		}
+		if(minions.isEmpty()) {
 			error.throwWithMessage("No hay minions que pueden hacer la maldad")
 		}
-		unaCiudad.eliminarObjeto("Suero")
-		self.minionsSeleccionados(minions).forEach({m => m.absorberSueroMutante()})
-		self.minionsSeleccionados(minions).forEach({m => m.agregarMaldad(self)})
-		
+		unaCiudad.eliminarObjeto(self)
+		minions.forEach({m => m.absorberSueroMutante()})
+		minions.forEach({m => m.agregarMaldad(self)})
 	}
 	
 }
 
-object luna inherits Robar {
-	
-	method minionsSeleccionados(minions){
-		return self.minionPeligrosos(minions).filter({m=>m.tieneEstaArma("rayo encogedor")})	
+object luna {
+
+	method cumpleRequisito(unMinion) {
+		return unMinion.esPeligroso() && unMinion.tieneEstaArma("rayo encogedor")
 	}	
 	
-	method aplicarCambios(minions,unaCiudad){
-		if(self.minionsSeleccionados(minions).isEmpty()) {
+	method modificarCiudad(minions,unaCiudad){
+		if(minions.isEmpty()) {
 			error.throwWithMessage("No hay minions que pueden hacer la maldad")
 		}
-		unaCiudad.eliminarObjeto("Luna")
-		self.minionsSeleccionados(minions).forEach({m => m.agregarArma(new Arma("rayo congelante",10))})
-		self.minionsSeleccionados(minions).forEach({m => m.agregarMaldad(self)})
+		unaCiudad.eliminarObjeto(self)
+		minions.forEach({m => m.agregarArma(new Arma("rayo congelante",10))})
+		minions.forEach({m => m.agregarMaldad(self)})
 	}
 	
 }
@@ -302,10 +292,9 @@ class Ciudad {
 	var temperatura
 	var objetosQuePosee = []
 	
-	
 	constructor(unaTemperatura,objeto) {
 		temperatura = unaTemperatura
-		objetosQuePosee = objeto
+		objetosQuePosee.add(objeto)
 	}
 	
 	method temperatura(unaTemperatura) {
@@ -323,9 +312,10 @@ class Ciudad {
 	method objetosQuePosee() = objetosQuePosee
 	
 	method eliminarObjeto(obj){
-		if(objetosQuePosee.isEmpty()){
-			throw new SinElementosException("Esta ciudad no tiene elementos para robar")
-		}
 		objetosQuePosee.remove(obj)
+	}
+	
+	method poseeEsteObjetoLaCiudad(objeto){
+		return self.objetosQuePosee().contains(objeto)
 	}
 }

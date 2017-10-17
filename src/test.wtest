@@ -1,13 +1,16 @@
 import main.*
 
 describe "Test mi villano objetoso" {
-	var buenosAires = new Ciudad(20,[])
-	var gru = new Villano()
-	var pepe = new Minion("pepe",amarillo,500,[])
-	var gordito = new Minion("gordito",amarillo,900, [new Arma("rayo congelante",90)])
-	var redondito = new Minion("redondito",amarillo,540, [new Arma("rayo congelante",35)])
+	
+	var piramide = new Piramide(90)
 	var congelar = new Congelar(500)
-	var roboDePiramide = new Piramide(90)
+	var buenosAires = new Ciudad(20,piramide)
+	var gru = new Villano()
+	var rayoCongelante = new Arma("rayo congelante",30)
+	/* cambie la instanciacion del minion */
+	var pepe = new Minion("pepe",amarillo,500,rayoCongelante)
+	var gordito = new Minion("gordito",amarillo,900, new Arma("rayo congelante",90))
+	var redondito = new Minion("redondito",amarillo,540, new Arma("rayo congelante",35))
 	
 
 fixture {
@@ -23,9 +26,8 @@ method gorditoArmado(){
 }
 
 method buenosAiresConObjetos(){
-	buenosAires.agregarObjeto("Piramide")
-	buenosAires.agregarObjeto("Suero")
-	buenosAires.agregarObjeto("Luna")	
+	buenosAires.agregarObjeto(sueroMutante)	
+	buenosAires.agregarObjeto(luna)	
 }
 
 test "Se crea un minion amarillo con 5 bananas y un rayo congelante con 10 de potencia" {
@@ -38,7 +40,7 @@ test "Se crea un minion amarillo con 5 bananas y un rayo congelante con 10 de po
 test "se le otorga un arma a un minion" {
 	
 	pepe.agregarArma(new Arma("rayo congelante",20))
-	assert.that(pepe.armas().head().nombreArma() == "rayo congelante")
+	assert.equals(pepe.armas().size(), 2)
 	
 }
 
@@ -54,7 +56,7 @@ test "Se verifica si un minion es peligroso" {
 
 test "Pepe que es un minion amarillo toma la pocion" {
 	pepe.absorberSueroMutante()
-	assert.that(pepe.color().nombreColor() == "violeta")
+	assert.equals(violeta,pepe.color())
 	assert.equals(499,pepe.bananas())
 }
 
@@ -65,16 +67,10 @@ test "Gru planifica hacer un congelamiento" {
 	assert.equals(510,pepe.bananas())
 }
 
-test "  la maldad congelar tiene un ejercito de 2 minions"{
-	
-	assert.equals(2,congelar.minionsSeleccionados([gordito,redondito,pepe]).size())
-}
-
 test "Gru planifica robar una piramide"{
 	pepe.agregarArma(new Arma("rayo congelante",20))
 	pepe.absorberSueroMutante()
-	buenosAires.agregarObjeto("Piramide")
-	gru.planificarMaldad(roboDePiramide)
+	gru.planificarMaldad(piramide)
 	
 	assert.equals([],buenosAires.objetosQuePosee())
 	assert.equals(509,pepe.bananas())
@@ -89,8 +85,8 @@ test "Gru planifica robar el Suero mutante"{
 	gru.agregarMinion(redondito)
 	gru.planificarMaldad(sueroMutante)
 	
-	assert.equals(["Piramide","Luna"],buenosAires.objetosQuePosee())
-	assert.equals("violeta",gordito.color().nombreColor())
+	assert.equals(2,buenosAires.objetosQuePosee().size())
+	assert.equals(violeta,gordito.color())
 	
 }
 
@@ -105,7 +101,7 @@ test "Gru roba la Luna "{
 
 test "El minion mas util de gru es Pepe" {
 	pepe.agregarMaldad(congelar)
-	pepe.agregarMaldad(roboDePiramide)
+	pepe.agregarMaldad(piramide)
 	gru.agregarMinion(redondito)
 	redondito.agregarMaldad(congelar)
 	
@@ -115,13 +111,14 @@ test "El minion mas util de gru es Pepe" {
 
 test "El minion mas inutil de gru es gordito" {
 	pepe.agregarMaldad(congelar)
-	pepe.agregarMaldad(roboDePiramide)
+	pepe.agregarMaldad(piramide)
 	gru.agregarMinion(redondito)
 	redondito.agregarMaldad(congelar)
 	gru.agregarMinion(gordito)
 	
 	assert.equals([gordito],gru.minionsMasInutiles())
 }
+
 
 
 /*Punto 4 */
